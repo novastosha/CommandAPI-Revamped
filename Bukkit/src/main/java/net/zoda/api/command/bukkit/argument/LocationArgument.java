@@ -1,11 +1,11 @@
-package net.zoda.api.command.argument;
+package net.zoda.api.command.bukkit.argument;
 
 import net.zoda.api.command.argument.target.TargetType;
 import net.zoda.api.command.argument.type.ArgumentType;
 import net.zoda.api.command.argument.type.TargetManager;
 import net.zoda.api.command.argument.type.completion.CompletionType;
-import net.zoda.api.command.utils.WorldlessLocation;
-import net.zoda.api.command.wrapper.bukkit.BukkitCommandManager;
+import net.zoda.api.command.bukkit.manager.BukkitCommandManager;
+import net.zoda.api.command.bukkit.WorldlessLocation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 
 @TargetManager(BukkitCommandManager.class)
-@ArgumentType(typeClass = WorldlessLocation.class, name = "integer", completionType = CompletionType.OPTIONALLY_AUTOMATIC)
+@ArgumentType(typeClass = WorldlessLocation.class, name = "location", completionType = CompletionType.OPTIONALLY_AUTOMATIC)
 public @interface LocationArgument {
 
     String name();
