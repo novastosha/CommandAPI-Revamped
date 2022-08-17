@@ -7,4 +7,4 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CommandRun {}
+public @interface DefaultCommandRun {}
