@@ -5,7 +5,6 @@ import net.zoda.api.command.argument.target.TargetType;
 import net.zoda.api.command.argument.type.ArgumentType;
 import net.zoda.api.command.argument.type.BuiltinCompletionArgumentTypeImpl;
 import net.zoda.api.command.argument.type.completion.CompletionType;
-import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.ElementType;
@@ -29,13 +28,18 @@ public @interface StringArgument {
         }
 
         @Override
-        public int maximumArgs(CommandSender sender, StringArgument annotation, Method method, ICommand command) {
+        public String fromString(String[] args, StringArgument annotation, Method method, ICommand command) {
+            return args[0];
+        }
+
+        @Override
+        public int maximumArgs(StringArgument annotation, Method method, ICommand command) {
             return 0;
         }
 
 
         @Override
-        public @NotNull List<String> completions(CommandSender sender, StringArgument annotation, Method method, ICommand command) {
+        public @NotNull List<String> completions(StringArgument annotation, Method method, ICommand command) {
             return new ArrayList<>();
         }
     }

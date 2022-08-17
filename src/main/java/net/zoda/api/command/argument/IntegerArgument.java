@@ -1,10 +1,10 @@
 package net.zoda.api.command.argument;
 
 import net.zoda.api.command.ICommand;
+import net.zoda.api.command.argument.target.TargetType;
 import net.zoda.api.command.argument.type.ArgumentType;
 import net.zoda.api.command.argument.type.ArgumentTypeImpl;
 import net.zoda.api.command.argument.type.completion.CompletionType;
-import org.bukkit.command.CommandSender;
 
 import java.lang.annotation.*;
 import java.lang.reflect.Method;
@@ -18,17 +18,18 @@ public @interface IntegerArgument {
 
         @Override
         public boolean verifyAnnotation(IntegerArgument annotation, Logger logger,
-                                        Method method, ICommand command) {
+                                        Method method, ICommand command
+                , Class<?> parameterType) {
             for (StringIntegerRepresentation representation : annotation.stringIntegerRepresentations()) {
-                if(!representation.name().contains(" ")) continue;
+                if (!representation.name().contains(" ")) continue;
 
-                logger.severe("Argument: "+annotation.name()+" string-integer representation: "+representation.name()+" contains spaces!");
+                logger.severe("Argument: " + annotation.name() + " string-integer representation: " + representation.name() + " contains spaces!");
                 return false;
             }
 
-            if(annotation.range().min() == 0 && annotation.range().max() == 0) return true;
+            if (annotation.range().min() == 0 && annotation.range().max() == 0) return true;
 
-            if(annotation.range().min() >= annotation.range().max())  {
+            if (annotation.range().min() >= annotation.range().max()) {
                 return false;
             }
 
@@ -41,7 +42,12 @@ public @interface IntegerArgument {
         }
 
         @Override
-        public int maximumArgs(CommandSender sender, IntegerArgument annotation, Method method, ICommand command) {
+        public Integer fromString(String[] args, IntegerArgument annotation, Method method, ICommand command) {
+            return null;
+        }
+
+        @Override
+        public int maximumArgs(IntegerArgument annotation, Method method, ICommand command) {
             return 1;
         }
 
@@ -55,6 +61,7 @@ public @interface IntegerArgument {
     @Target(ElementType.TYPE_USE)
     @interface StringIntegerRepresentation {
         String name();
+
         int value();
     }
 
@@ -62,8 +69,10 @@ public @interface IntegerArgument {
      * @return the argument's name
      */
     String name();
-
     boolean required() default true;
+
+    String completer() default "";
+    TargetType completerType() default TargetType.FIELD;
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE_USE)
