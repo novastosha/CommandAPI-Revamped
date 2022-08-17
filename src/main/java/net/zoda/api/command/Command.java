@@ -12,6 +12,8 @@ import java.lang.annotation.Target;
 public @interface Command {
 
     String value();
-    Class<? extends CommandManager<?>> targetClass();
+    String description() default "";
+
+    Class<? extends CommandManager<?>> manager();
 
 }
