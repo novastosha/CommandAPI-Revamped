@@ -2,14 +2,17 @@ package net.zoda.api.command.argument.registry;
 
 import net.zoda.api.command.argument.EnumArgument;
 import net.zoda.api.command.argument.IntegerArgument;
-import net.zoda.api.command.argument.LocationArgument;
+import net.zoda.api.command.argument.StringArgument;
+import net.zoda.api.command.argument.target.TargetType;
 import net.zoda.api.command.argument.type.ArgumentType;
 import net.zoda.api.command.argument.type.ArgumentTypeImpl;
 import net.zoda.api.command.argument.type.completion.CompletionType;
 import net.zoda.api.command.utils.Pair;
+import net.zoda.api.command.utils.Utils;
 
 import java.lang.annotation.*;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Method;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +25,7 @@ public final class ArgumentTypeRegistry {
     static {
         instance().register(IntegerArgument.class, new IntegerArgument.Impl());
         instance().register(EnumArgument.class,new EnumArgument.Impl());
+        instance().register(StringArgument.class,new StringArgument.Impl());
     }
 
     private final HashMap<Class<? extends Annotation>, Pair<ArgumentType, ArgumentTypeImpl<?,? extends Annotation>>> registeredArgumentTypes;
@@ -54,15 +58,14 @@ public final class ArgumentTypeRegistry {
 
         ArgumentType argumentType = argumentAnnotation.getAnnotation(ArgumentType.class);
 
-        ParameterizedType implementationGenericParameters = (ParameterizedType) impl.getClass().getGenericSuperclass();
-        Class<?> targetClass = (Class<?>) implementationGenericParameters.getActualTypeArguments()[0];
+        /*Class<?> targetClass = impl.objectClass();
 
         // Allow inheritance (for compatibility reasons)
         if (!targetClass.isAssignableFrom(argumentType.typeClass())) {
             logger.warning("Implementation target class of: "+argumentAnnotation.getSimpleName()+" does not match ArgumentType type class! "
                 +"(expected: "+argumentType.typeClass().getSimpleName()+", got: "+targetClass.getSimpleName()+")");
             return;
-        }
+        }*/
 
         if(!argumentAnnotation.isAnnotationPresent(Retention.class)) {
             logger.warning("Argument annotation: "+argumentAnnotation.getSimpleName()+" doesn't have a Retention annotation!");
@@ -97,12 +100,62 @@ public final class ArgumentTypeRegistry {
             return;
         }
 
-        try {
-
-        }catch ()
+        Map<String, Class<?>> values = new HashMap<>(Map.of(
+                "name",String.class,
+                "required",boolean.class
+        ));
 
         if(argumentType.completionType().equals(CompletionType.OPTIONALLY_AUTOMATIC) || argumentType.completionType().equals(CompletionType.MANUAL)) {
-
+            values.putAll(Map.of(
+                    "completer",String.class,
+                    "completerType",TargetType.class
+            ));
         }
+        if(!Utils.isPresent(argumentAnnotation, TargetType.METHOD,"name")) {
+            logger.warning("Argument annotation: "+argumentAnnotation.getSimpleName()+" doesn't have a name value!");
+            return;
+        }
+
+        for(Map.Entry<String, Class<?>> entry : values.entrySet()) {
+            if(!Utils.isPresent(argumentAnnotation, TargetType.METHOD,entry.getKey())) {
+                logger.warning("Argument annotation: "+argumentAnnotation.getSimpleName()+" doesn't have the \""+entry.getKey()+"\" value of type: "+entry.getValue().getSimpleName());
+                return;
+            }
+
+            try {
+                Method method = argumentAnnotation.getMethod(entry.getKey());
+                method.setAccessible(true);
+
+                if(!method.getReturnType().equals(entry.getValue())) {
+                    logger.warning("Argument annotation: "+argumentAnnotation.getSimpleName()+" value: "+entry.getKey()+" returns: "+method.getReturnType().getSimpleName()+" instead of: "+entry.getValue().getSimpleName());
+                    return;
+                }
+
+                Object expectedReturnType = switch (entry.getKey()) {
+                    case "required" -> true;
+                    case "completer" -> new String("");
+                    case "completerType" -> TargetType.FIELD;
+                    default -> null;
+                };
+                if(expectedReturnType == null) continue;
+
+                Object returnValue = method.getDefaultValue();
+                if(returnValue == null) {
+                    logger.warning("Missing default value of argument annotation: "+argumentAnnotation.getSimpleName()+" value: "+entry.getKey());
+                    return;
+                }
+
+                if(returnValue.equals(expectedReturnType)) continue;
+
+                logger.warning("Expected: "+expectedReturnType+" as a default value but got: "+returnValue+" instead in argument annotation: "+argumentAnnotation.getSimpleName()+" value: "+entry.getKey());
+                return;
+            } catch (NoSuchMethodException ignored) {
+                //Already checked above
+            }
+        }
+
+        registeredArgumentTypes.put(argumentAnnotation,new Pair<>(argumentType,impl));
     }
+
+
 }
