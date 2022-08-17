@@ -12,11 +12,8 @@ public final class Utils {
         throw new AssertionError(getClass().getSimpleName() + " cannot be instanced!");
     }
 
-    public static boolean isPresent(ICommand command, TargetType type, String name) {
+    public static boolean isPresent(Class<?> clazz, TargetType type, String name) {
         try {
-
-            Class<?> clazz = command.getClass();
-
             switch (type) {
                 case METHOD -> clazz.getDeclaredMethod(name);
                 case FIELD -> clazz.getDeclaredField(name);
