@@ -7,30 +7,28 @@ import net.zoda.api.command.argument.type.ArgumentTypeImpl;
 import net.zoda.api.command.argument.type.TargetManager;
 import net.zoda.api.command.argument.type.completion.CompletionType;
 import net.zoda.api.command.bukkit.manager.BukkitCommandManager;
-import net.zoda.api.command.bukkit.WorldlessLocation;
+import net.zoda.api.command.utils.Pair;
+import org.bukkit.Location;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 
-@Target(ElementType.TYPE_USE)
 @Retention(RetentionPolicy.RUNTIME)
 
 @TargetManager(BukkitCommandManager.class)
-@ArgumentType(typeClass = WorldlessLocation.class, name = "location", completionType = CompletionType.OPTIONALLY_AUTOMATIC)
+@ArgumentType(typeClass = Location.class, name = "location", completionType = CompletionType.OPTIONALLY_AUTOMATIC)
 public @interface LocationArgument {
 
-    class Impl implements ArgumentTypeImpl<WorldlessLocation,LocationArgument> {
+    class Impl implements ArgumentTypeImpl<Location,LocationArgument> {
 
         @Override
-        public String stringify(WorldlessLocation value, LocationArgument annotation, Method method, ICommand command) {
+        public String stringify(Object value, LocationArgument annotation, Method method, ICommand command) {
             return null;
         }
 
         @Override
-        public WorldlessLocation fromString(String[] args, LocationArgument annotation, Method method, ICommand command) {
+        public Pair<Location, String> fromString(String[] args, LocationArgument annotation, Method method, ICommand command) {
             return null;
         }
 
