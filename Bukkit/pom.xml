@@ -5,8 +5,10 @@
     <parent>
         <artifactId>CommandAPI-Revamped</artifactId>
         <groupId>net.zoda</groupId>
-        <version>0.1.0</version>
+        <version>0.5.2.3</version>
     </parent>
+
+    <version>0.2.0.5</version>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>commandapi-bukkit</artifactId>
@@ -33,7 +35,7 @@
         <dependency>
             <groupId>net.zoda</groupId>
             <artifactId>commandapi-base</artifactId>
-            <version>0.1.0</version>
+            <version>0.5.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <groupId>net.zoda</groupId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>Bukkit-TestPlugin</artifactId>
 
@@ -17,8 +17,7 @@
         <dependency>
             <groupId>net.zoda</groupId>
             <artifactId>commandapi-bukkit</artifactId>
-            <version>0.1.0</version>
-            <scope>compile</scope>
+            <version>0.2.0.5</version>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
@@ -54,6 +53,7 @@
                             <artifactSet>
                                 <includes>
                                     <include>net.zoda:commandapi-bukkit</include>
+                                    <include>net.zoda:commandapi-base</include>
                                 </includes>
                             </artifactSet>
                         </configuration>
