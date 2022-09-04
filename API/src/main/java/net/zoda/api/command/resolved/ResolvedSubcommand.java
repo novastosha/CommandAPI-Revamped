@@ -26,6 +26,10 @@ public final class ResolvedSubcommand extends ResolvedCommand {
         this.group = group;
     }
 
-    public String getFullName() {return group.getFullName()+" "+super.getName();}
+    public String getFullName() {
+        if(group == null) return super.getName();
+
+        return group.getFullName()+" "+super.getName();
+    }
 
 }
