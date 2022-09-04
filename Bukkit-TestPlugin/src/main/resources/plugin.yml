@@ -1,0 +1,4 @@
+main: net.zoda.bukkit.tests.plugin.TestPlugin
+version: 0.1.0
+name: CommandAPI-Test
+api-version: 1.19
