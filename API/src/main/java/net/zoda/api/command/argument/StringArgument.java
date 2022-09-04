@@ -5,15 +5,19 @@ import net.zoda.api.command.argument.target.TargetType;
 import net.zoda.api.command.argument.type.ArgumentType;
 import net.zoda.api.command.argument.type.ArgumentTypeImpl;
 import net.zoda.api.command.argument.type.completion.CompletionType;
+import net.zoda.api.command.argument.type.completion.QuotesState;
 import net.zoda.api.command.utils.Pair;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
+@Target(ElementType.TYPE_USE)
 @Retention(RetentionPolicy.RUNTIME)
-@ArgumentType(typeClass = String.class, name = "string", completionType = CompletionType.OPTIONALLY_AUTOMATIC)
+@ArgumentType(typeClass = String.class, name = "string", completionType = CompletionType.OPTIONALLY_AUTOMATIC,quotesState = QuotesState.OPTIONAL)
 public @interface StringArgument {
 
     class Impl implements ArgumentTypeImpl<String,StringArgument> {

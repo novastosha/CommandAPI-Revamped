@@ -7,12 +7,15 @@ import net.zoda.api.command.argument.type.completion.CompletionType;
 import net.zoda.api.command.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Logger;
 
+@Target(ElementType.TYPE_USE)
 @Retention(RetentionPolicy.RUNTIME)
 @ArgumentType(typeClass = Enum.class, name = "enum", completionType = CompletionType.REQUIRED_AUTOMATIC)
 public @interface EnumArgument {

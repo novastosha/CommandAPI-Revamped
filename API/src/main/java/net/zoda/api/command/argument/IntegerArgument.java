@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
+@Target(ElementType.TYPE_USE)
 @Retention(RetentionPolicy.RUNTIME)
 @ArgumentType(typeClass = Integer[].class, name = "integer", completionType = CompletionType.OPTIONALLY_AUTOMATIC)
 public @interface IntegerArgument {

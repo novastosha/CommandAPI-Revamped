@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Logger;
 
+@Target(ElementType.TYPE_USE)
 @ArgumentType(typeClass = Double.class,name = "number",completionType = CompletionType.OPTIONALLY_AUTOMATIC)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NumberArgument {
@@ -70,6 +71,7 @@ public @interface NumberArgument {
 
     String completer() default "";
     TargetType completerType() default TargetType.FIELD;
+    boolean enforceCompletions() default true;
 
     boolean required() default true;
 
