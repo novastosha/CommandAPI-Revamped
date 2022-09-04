@@ -5,6 +5,7 @@ import net.zoda.api.command.CommandAliases;
 import net.zoda.api.command.DefaultCommandRun;
 import net.zoda.api.command.ICommand;
 import net.zoda.api.command.argument.EnumArgument;
+import net.zoda.api.command.argument.StringArgument;
 import net.zoda.api.command.bukkit.PlayerOnly;
 import net.zoda.api.command.bukkit.command.annotations.permission.CommandPermissions;
 import net.zoda.api.command.bukkit.manager.BukkitCommandManager;
@@ -29,7 +30,7 @@ public final class TestCommand implements ICommand {
     }
 
     @Subcommand("subcommand")
-    public void testSubcommand(CommandSender sender, @EnumArgument(name = "example_enum",targetClass = TestEnum.class) TestEnum testEnum) {
-        sender.sendMessage(testEnum.name());
+    public void testSubcommand(CommandSender sender, @StringArgument(name = "okay") String l) {
+        sender.sendMessage(l);
     }
 }
