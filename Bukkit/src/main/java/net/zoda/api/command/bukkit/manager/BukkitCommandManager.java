@@ -48,6 +48,11 @@ public class BukkitCommandManager extends CommandManager<CommandSender> implemen
         return command.getClass().isAnnotationPresent(PlayerOnly.class) ? Player.class : getDefaultActorClass();
     }
 
+    @Override
+    public boolean commandExists(String name) {
+        return false;
+    }
+
     @SuppressWarnings("unchecked")
     public void registerCommand(ICommand command, String fallbackPrefix) {
         BukkitClassResolvedCommand resolvedCommand = postResolve(super.resolveCommand(command));
@@ -106,9 +111,11 @@ public class BukkitCommandManager extends CommandManager<CommandSender> implemen
                 if (command.getBaseCommand().getSubcommands().size() == 0 || stringArguments.length == 0) {
                     StringParsingResult parsedStringArguments = attemptStringParsing(sender, command.getBaseCommand().getDefaultExecutor(), stringArguments);
                     if (parsedStringArguments.wasSuccessful()) {
-                        dispatch(command.getBaseCommand().getInstance(), command.getBaseCommand().getDefaultExecutor().getMethod(), parsedStringArguments.arguments(), sender);
-                        return true;
+                        dispatch(command.getBaseCommand().getInstance(), command.getBaseCommand().getDefaultExecutor().getMethod(), parsedStringArguments.arguments(), sender,new Object[0]);
+                    }else{
+                        sender.sendMessage(ChatColor.RED+buildGenericFeedbackMessage(parsedStringArguments.feedback()));
                     }
+                    return true;
                 } else {
                     ResolvedSubcommand subcommand = parseSubcommand(stringArguments, command.getBaseCommand());
                     if (subcommand == null) {
@@ -121,20 +128,20 @@ public class BukkitCommandManager extends CommandManager<CommandSender> implemen
 
                     String[] newArgs;
                     try {
-                        newArgs = new String[(stringArguments.length - subcommand.getFullName().split(" ").length - 1) - 1];
-                        System.arraycopy(stringArguments, subcommand.getFullName().split(" ").length, newArgs, 0, (stringArguments.length - subcommand.getFullName().split(" ").length - 1) - 1);
+                        newArgs = new String[(stringArguments.length - subcommand.getFullName().split(" ").length)];
+                        System.arraycopy(stringArguments, subcommand.getFullName().split(" ").length, newArgs, 0, (stringArguments.length - subcommand.getFullName().split(" ").length));
                     } catch (Exception e) {
                         sender.sendMessage(ChatColor.RED + "Missing arguments!");
-
-                        e.printStackTrace();
                         return true;
                     }
 
                     StringParsingResult parsedStringArguments = attemptStringParsing(sender, subcommand.getExecutor(), newArgs);
                     if (parsedStringArguments.wasSuccessful()) {
-                        dispatch(command.getBaseCommand().getInstance(), subcommand.getExecutor().getMethod(), parsedStringArguments.arguments(), sender);
-                        return true;
+                        dispatch(command.getBaseCommand().getInstance(), subcommand.getExecutor().getMethod(), parsedStringArguments.arguments(), sender,new Object[0]);
+                    }else{
+                        sender.sendMessage(ChatColor.RED+buildGenericFeedbackMessage(parsedStringArguments.feedback()));
                     }
+                    return true;
                 }
 
             } catch (Exception exception) {

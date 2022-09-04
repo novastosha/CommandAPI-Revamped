@@ -47,7 +47,7 @@ import java.util.logging.Logger;
  * </p>
  * - {@link CommandManager#getCompletions(ResolvedCompletionArgument, T)}
  * <p>
- * and a function to dispatch a subcommand or the default executor {@link CommandManager#dispatch(ICommand, Method, ParsedArgument[], Object)}
+ * and a function to dispatch a subcommand or the default executor {@link CommandManager#dispatch(ICommand, Method, ParsedArgument[], Object,Object[])}
  * </p>
  */
 public abstract class CommandManager<T> {
@@ -87,11 +87,12 @@ public abstract class CommandManager<T> {
         return new Class[0];
     }
 
-    protected final <Actor extends T> void dispatch(ICommand instance, Method method, ParsedArgument[] arguments, Actor actor)
+    protected final <Actor extends T> void dispatch(ICommand instance, Method method, ParsedArgument[] arguments, Actor actor,Object[] extras)
             throws InvocationTargetException {
         if (!actor.getClass().equals(defaultActorClass) &&
                 !actor.getClass().equals(actorClassSubcommand(method, instance)) &&
-                !actor.getClass().equals(actorClassClass(instance))) {
+                !actor.getClass().equals(actorClassClass(instance))
+        && !method.getParameterTypes()[0].equals(defaultActorClass)) {
             logger.severe("Actor parameter type really does extend: " + defaultActorClass.getSimpleName() + " but is not returned in \"actorClassClass\" nor in \"actorClassSubcommand\"");
             return;
         }
@@ -99,15 +100,35 @@ public abstract class CommandManager<T> {
         Map<Integer, Object> objects = new TreeMap<>();
         objects.put(0, actor);
 
-        Arrays.stream(arguments).forEach(parsedArgument -> {
-            objects.put(parsedArgument.baseArgument().getIndex(), parsedArgument.value());
-        });
+        if(verifyExtras(extras)) return;
+        for (int i = 0; i < extras.length; i++) {
+            objects.put(i,extras[i]);
+        }
+
+        Arrays.stream(arguments).forEach(parsedArgument -> objects.put(parsedArgument.baseArgument().getIndex()+extras.length, parsedArgument.value()));
 
         method.setAccessible(true);
         try {
             method.invoke(instance, objects.values().toArray(new Object[0]));
-        } catch (IllegalAccessException ignored) {
+        } catch (IllegalAccessException ignored) {}
+    }
+
+    private boolean verifyExtras(Object[] extras) {
+        if(extraSignatureClasses().length == 0) return false;
+        if(extraSignatureClasses().length < extras.length) {
+            logger.severe("Extras array is longer than the classes array!");
+            return true;
         }
+
+        int index = 0;
+        for(Object extra : extras) {
+            if(extra.getClass().equals(extraSignatureClasses()[index])) continue;
+
+            logger.severe("Object provided in extras array at index: "+index+"(expected: "+extraSignatureClasses()[0].getSimpleName()+", got: "+extra.getClass().getSimpleName()+")");
+            index++;
+        }
+
+        return false;
     }
 
     /**
@@ -504,9 +525,15 @@ public abstract class CommandManager<T> {
         return (O) annotation.getClass().getMethod(value).invoke(annotation);
     }
 
-    public boolean commandExists(String name) {
-        return false;
+    protected String buildGenericFeedbackMessage(StringParsingResult.ParsingResultFeedback feedback) {
+        StringBuilder builder = new StringBuilder();
+        if(feedback.argument() != null) {
+            builder.append("Argument: ").append(feedback.argument().getName()).append(": ");
+        }
+
+        return builder.append(feedback.message()).toString();
     }
+    public abstract boolean commandExists(String name);
 
     /**
      * Uses {@link CommandManager#getCompletionsAsString(ResolvedCompletionArgument, Actor)} and splits strings at " " and uses integer parameter as an index
@@ -619,8 +646,20 @@ public abstract class CommandManager<T> {
             try {
                 TriPair<Pair<StringParsingResult.EnumParsingResultType, String>, Integer, Object> result = parseArgument(actor, arguments, index, arguments[index], executor.getMethod(), argument);
 
+                if(result.a().a().equals(StringParsingResult.EnumParsingResultType.SUCCESS)) {
+                    parsedArguments.add(new ParsedArgument(argument,result.c()));
+                    index+=result.b();
+                }else{
+                    return new StringParsingResult(new StringParsingResult.ParsingResultFeedback(result.a().a(),
+                            result.a().b(),
+                            argument),null);
+                }
+
             } catch (ArrayIndexOutOfBoundsException exception) {
                 if (!argument.isRequired()) continue;
+                else {
+                    return new StringParsingResult(new StringParsingResult.ParsingResultFeedback(StringParsingResult.EnumParsingResultType.MISSING_ARGUMENT,"missing",argument),null);
+                }
             }
 
             index++;
@@ -646,7 +685,7 @@ public abstract class CommandManager<T> {
             }
 
             String[] newArgs = null;
-            if (args[i].startsWith("\"\"")) {
+            if (args[i].startsWith("\"\"") || !args[i].startsWith("\"")) {
                 newArgs = new String[]{args[i].replaceFirst("\"", "")};
             } else {
                 newArgs = fromBuilder(i, args);
@@ -672,9 +711,7 @@ public abstract class CommandManager<T> {
             if (args.length - i + 1 < getMaximumArguments(argument, method)) {
                 return new TriPair<>(new Pair<>(StringParsingResult.EnumParsingResultType.INCOMPLETE_ARGUMENT, "Not enough sub-arguments"), 0, null);
             }
-
-            int argsUse = getMaximumArguments(argument, method);
-
+            int argsUse = Math.max(1,getMaximumArguments(argument, method));
 
             String[] newArguments = new String[argsUse];
             System.arraycopy(args, i, newArguments, 0, argsUse);
